@@ -13,3 +13,4 @@
 - If a class contains many private methods, consider refactoring related functionality into separate classes to improve maintainability and cohesion.
 - Use `IEnumerable<T>` or arrays for method parameters and return types when the collection is not intended to be modified. Use `List<T>` only when modification is required.
 - Apply consistent exception handling practices across the codebase. Ensure that exceptions are meaningful, logged appropriately, and do not expose sensitive details.
+- In agent mode don't combine Powershell commands with "&&" since it fails in some environments.

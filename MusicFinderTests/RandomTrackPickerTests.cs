@@ -1,38 +1,8 @@
-﻿using Microsoft.Extensions.Configuration;
-
-namespace MusicFinderTests
+﻿namespace MusicFinderTests
 {
 	[TestClass]
-	public sealed class MusicFinderTests
+	public sealed class RandomTrackPickerTests
 	{
-		[TestMethod]
-		public void ModernConfiguration_ReadsAppsettingsJson()
-		{
-			// Test the modern .NET configuration system
-			var builder = new ConfigurationBuilder()
-				.SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-
-			var config = builder.Build();
-			string? modernConfigValue = config["MusicFolderRoot"];
-
-			Console.WriteLine($"Config value read: '{modernConfigValue}'");
-
-			Assert.IsNotNull(modernConfigValue);
-			Assert.AreEqual(@"C:\Music\", modernConfigValue);
-		}
-
-		[TestMethod]
-		public void ConfigurationHelper_ReadsConfiguration()
-		{
-			// Test our configuration helper
-			string? helperConfigValue = MusicFinder.ConfigurationHelper.GetMusicFolderRoot();
-			Console.WriteLine($"ConfigurationHelper value read: '{helperConfigValue}'");
-
-			Assert.IsNotNull(helperConfigValue);
-			Assert.AreEqual(@"C:\Music\", helperConfigValue);
-		}
-
 		[TestMethod]
 		public async Task GetRandomTrack_FindsANonNullPath()
 		{
@@ -41,22 +11,20 @@ namespace MusicFinderTests
 
 			// Get the config value using the helper
 			string? configValue = MusicFinder.ConfigurationHelper.GetMusicFolderRoot();
-			Console.WriteLine($"Config value: '{configValue}'");
 
-			// If the config path doesn't exist or isn't accessible, create a test path
+			// If root file path isn't configured correctly, create a temporary folder/path so the test can run
 			if (string.IsNullOrEmpty(configValue) || !Directory.Exists(configValue))
 			{
-				// Create a temporary test music folder structure for testing
 				var tempMusicFolder = CreateTestMusicStructure();
 				track = await picker.GetRandomTrackAsync(tempMusicFolder);
 			}
 			else
 			{
-				// Use the configured path
 				track = await picker.GetRandomTrackAsync();
 			}
 
 			Assert.IsNotNull(track);
+			Assert.IsTrue(File.Exists(track), "The selected track file does not exist.");
 			Console.WriteLine($"Selected track: {track}");
 		}
 

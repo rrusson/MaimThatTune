@@ -9,7 +9,7 @@
 		/// </summary>
 		/// <param name="musicFolderRoot">Optional override for the music folder root. If null, reads from configuration.</param>
 		/// <returns>The full path to an MP3 file</returns>
-		/// <exception cref="DirectoryNotFoundException">Thrown if the root directory isn't found</exception>
+		/// <exception cref="DirectoryNotFoundException">Thrown if the root directory (from config) isn't found</exception>
 		public async Task<string?> GetRandomTrackAsync(string? musicFolderRoot = null)
 		{
 			// Use provided path or read from modern configuration

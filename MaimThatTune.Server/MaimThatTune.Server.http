@@ -1,6 +1,6 @@
 @MaimThatTune.Server_HostAddress = http://localhost:5207
 
-GET {{MaimThatTune.Server_HostAddress}}/weatherforecast/
+GET {{MaimThatTune.Server_HostAddress}}/api/
 Accept: application/json
 
 ###

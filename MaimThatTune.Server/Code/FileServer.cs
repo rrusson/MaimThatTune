@@ -1,6 +1,4 @@
-﻿using MusicFinder;
-
-namespace MaimThatTune.Server.Code
+﻿namespace MaimThatTune.Server.Code
 {
 	public class FileServer
 	{
@@ -11,13 +9,6 @@ namespace MaimThatTune.Server.Code
 				return null;
 			}
 
-			var mp3Info = new Mp3Info(trackPath);
-			var trackInfo = mp3Info.GetAllProperties();
-			var artist = trackInfo.FirstPerformer ?? "Unknown Artist";
-			var trackId = Guid.NewGuid().ToString();
-			//_trackArtistMap[trackId] = artist;
-
-			var duration = mp3Info.GetDuration();
 			var segmentLength = TimeSpan.FromSeconds(5);
 			var stream = new MemoryStream();
 
