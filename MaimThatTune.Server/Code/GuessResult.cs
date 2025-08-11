@@ -3,7 +3,7 @@
 public partial class MusicController
 	{
 		/// <summary>
-		/// Result model for artist guess.
+		/// Result model for artist and track guess.
 		/// </summary>
 		public class GuessResult
         {
@@ -15,6 +15,10 @@ public partial class MusicController
             /// The actual artist name.
             /// </summary>
             public string Artist { get; set; } = string.Empty;
+            /// <summary>
+            /// The actual track title.
+            /// </summary>
+            public string Track { get; set; } = string.Empty;
         }
     }
 }

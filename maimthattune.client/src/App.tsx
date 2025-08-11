@@ -4,6 +4,7 @@ import './App.css';
 interface GuessResult {
     isCorrect: boolean;
     artist: string;
+    track: string;
 }
 
 function App() {
@@ -12,10 +13,7 @@ function App() {
     const [guess, setGuess] = useState('');
     const [result, setResult] = useState<GuessResult | null>(null);
     const [loading, setLoading] = useState(false);
-
-    useEffect(() => {
-        fetchRandomSegment();
-    }, []);
+    const [gameStarted, setGameStarted] = useState(false);
 
     async function fetchRandomSegment() {
         setLoading(true);
@@ -33,6 +31,11 @@ function App() {
         setLoading(false);
     }
 
+    async function startGame() {
+        setGameStarted(true);
+        await fetchRandomSegment();
+    }
+
     async function submitGuess(e: React.FormEvent) {
         e.preventDefault();
         if (!trackId) return;
@@ -48,36 +51,154 @@ function App() {
         }
     }
 
+    if (!gameStarted) {
+        return (
+            <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                zIndex: 1000
+            }}>
+                <div style={{
+                    backgroundColor: 'white',
+                    padding: '3rem',
+                    borderRadius: '20px',
+                    textAlign: 'center',
+                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)'
+                }}>
+                    <h1 style={{ color: '#333', marginBottom: '2rem', fontSize: '2.5rem' }}>
+                        🎵 Maim That Tune! 🎵
+                    </h1>
+                    <p style={{ color: '#666', marginBottom: '2rem', fontSize: '1.2rem' }}>
+                        Listen to music clips and guess the artist or track name!
+                    </p>
+                    <button
+                        onClick={startGame}
+                        style={{
+                            fontSize: '2rem',
+                            padding: '1rem 3rem',
+                            backgroundColor: '#ff6b6b',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '15px',
+                            cursor: 'pointer',
+                            fontWeight: 'bold',
+                            textTransform: 'uppercase',
+                            letterSpacing: '2px',
+                            boxShadow: '0 5px 15px rgba(255, 107, 107, 0.4)',
+                            transition: 'all 0.3s ease'
+                        }}
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.transform = 'scale(1.05)';
+                            e.currentTarget.style.backgroundColor = '#ff5252';
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.transform = 'scale(1)';
+                            e.currentTarget.style.backgroundColor = '#ff6b6b';
+                        }}
+                    >
+                        🎮 START 🎮
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div>
-            <h1>Guess the Artist</h1>
-            <p>Listen to the 5-second music clip and guess the artist!</p>
+        <div style={{ padding: '2rem', maxWidth: '600px', margin: '0 auto' }}>
+            <h1 style={{ textAlign: 'center', color: '#333' }}>🎵 Maim That Tune! 🎵</h1>
+            <p style={{ textAlign: 'center', color: '#666', marginBottom: '2rem' }}>
+                Listen to the music clip and try to guess the <strong>artist name</strong> or <strong>track name</strong>!
+            </p>
+            
             {audioUrl && (
-                <audio controls src={audioUrl} autoPlay />
-            )}
-            <form onSubmit={submitGuess} style={{ marginTop: 16 }}>
-                <input
-                    type="text"
-                    value={guess}
-                    onChange={e => setGuess(e.target.value)}
-                    placeholder="Enter artist name"
-                    disabled={!!result || loading}
-                />
-                <button type="submit" disabled={!guess || !!result || loading}>Guess</button>
-            </form>
-            {result && (
-                <div style={{ marginTop: 16 }}>
-                    {result.isCorrect ? (
-                        <span style={{ color: 'green' }}>Correct! 🎉</span>
-                    ) : (
-                        <span style={{ color: 'red' }}>Wrong! 😢</span>
-                    )}
-                    <div>Artist: <b>{result.artist}</b></div>
+                <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                    <audio controls src={audioUrl} autoPlay style={{ width: '100%', maxWidth: '400px' }} />
                 </div>
             )}
-            <button onClick={fetchRandomSegment} disabled={loading} style={{ marginTop: 24 }}>
-                Guess Another Track
-            </button>
+            
+            <form onSubmit={submitGuess} style={{ marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                    <input
+                        type="text"
+                        value={guess}
+                        onChange={e => setGuess(e.target.value)}
+                        placeholder="Enter artist or track name"
+                        disabled={!!result || loading}
+                        style={{
+                            padding: '0.75rem',
+                            fontSize: '1rem',
+                            border: '2px solid #ddd',
+                            borderRadius: '8px',
+                            flex: 1,
+                            maxWidth: '300px'
+                        }}
+                    />
+                    <button 
+                        type="submit" 
+                        disabled={!guess || !!result || loading}
+                        style={{
+                            padding: '0.75rem 1.5rem',
+                            fontSize: '1rem',
+                            backgroundColor: '#4CAF50',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontWeight: 'bold'
+                        }}
+                    >
+                        Guess
+                    </button>
+                </div>
+            </form>
+
+            {result && (
+                <div style={{ 
+                    textAlign: 'center',
+                    padding: '1.5rem',
+                    backgroundColor: result.isCorrect ? '#d4edda' : '#f8d7da',
+                    borderRadius: '8px',
+                    marginBottom: '1.5rem'
+                }}>
+                    <div style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>
+                        {result.isCorrect ? (
+                            <span style={{ color: '#155724' }}>🎉 Correct! 🎉</span>
+                        ) : (
+                            <span style={{ color: '#721c24' }}>😢 Wrong! 😢</span>
+                        )}
+                    </div>
+                    <div style={{ fontSize: '1.1rem' }}>
+                        <div><strong>Artist:</strong> {result.artist}</div>
+                        <div><strong>Track:</strong> {result.track}</div>
+                    </div>
+                </div>
+            )}
+
+            <div style={{ textAlign: 'center' }}>
+                <button 
+                    onClick={fetchRandomSegment} 
+                    disabled={loading}
+                    style={{
+                        padding: '1rem 2rem',
+                        fontSize: '1.1rem',
+                        backgroundColor: '#2196F3',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold'
+                    }}
+                >
+                    {loading ? 'Loading...' : '🔄 Guess Another Track'}
+                </button>
+            </div>
         </div>
     );
 }

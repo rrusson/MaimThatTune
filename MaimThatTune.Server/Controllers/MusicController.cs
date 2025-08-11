@@ -9,13 +9,13 @@ using MusicFinder;
 namespace MaimThatTune.Server.Controllers
 {
 	/// <summary>
-	/// Provides endpoints for streaming random MP3 segments and artist guessing.
+	/// Provides endpoints for streaming random MP3 segments and artist/track guessing.
 	/// </summary>
 	[ApiController]
 	[Route("api/[controller]")]
 	public partial class MusicController : ControllerBase
 	{
-		private static readonly ConcurrentDictionary<string, string> _trackArtistMap = new();
+		private static readonly ConcurrentDictionary<string, TrackMetadata> _trackMetadataMap = new();
 		private static readonly RandomTrackPicker _picker = new();
 
 		/// <summary>
@@ -38,19 +38,25 @@ namespace MaimThatTune.Server.Controllers
 
 			var mp3Info = new Mp3Info(trackPath!);
 			var trackInfo = mp3Info.GetAllProperties();
-			var artist = trackInfo.FirstPerformer;
+			var artist = trackInfo.FirstPerformer ?? "Unknown";
+			var track = trackInfo.Title ?? "Unknown";
 			var trackId = Guid.NewGuid().ToString();
-			_trackArtistMap[trackId] = artist;
+			
+			_trackMetadataMap[trackId] = new TrackMetadata
+			{
+				Artist = artist,
+				Track = track
+			};
 
 			Response.Headers.Append("X-Track-Id", trackId);
 			return File(stream, "audio/mpeg", enableRangeProcessing: true);
 		}
 
 		/// <summary>
-		/// Checks the user's guess for the artist of the current track.
+		/// Checks the user's guess for the artist or track of the current track.
 		/// </summary>
 		/// <param name="request">Guess request containing track ID and guess</param>
-		/// <returns>Result with correctness and artist name</returns>
+		/// <returns>Result with correctness, artist name, and track title</returns>
 		[HttpPost("guess")]
 		public IActionResult GuessArtist([FromBody] GuessRequest request)
 		{
@@ -59,19 +65,24 @@ namespace MaimThatTune.Server.Controllers
 				return BadRequest();
 			}
 
-			if (!_trackArtistMap.TryGetValue(request.TrackId, out var artist))
+			if (!_trackMetadataMap.TryGetValue(request.TrackId, out var metadata))
 			{
 				return NotFound();
 			}
 
-			var isCorrect = string.Equals(request.Guess.Trim(), artist, StringComparison.OrdinalIgnoreCase);
+			var guess = request.Guess.Trim();
+			var isArtistCorrect = string.Equals(guess, metadata.Artist, StringComparison.OrdinalIgnoreCase);
+			var isTrackCorrect = string.Equals(guess, metadata.Track, StringComparison.OrdinalIgnoreCase);
+			var isCorrect = isArtistCorrect || isTrackCorrect;
+
 			// Remove the track from the map after guessing
-			_trackArtistMap.TryRemove(request.TrackId, out _);
+			_trackMetadataMap.TryRemove(request.TrackId, out _);
 
 			return Ok(new GuessResult
 			{
 				IsCorrect = isCorrect,
-				Artist = artist
+				Artist = metadata.Artist,
+				Track = metadata.Track
 			});
 		}
 	}

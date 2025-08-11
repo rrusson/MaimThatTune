@@ -5,18 +5,21 @@ namespace MusicFinder
 	public static class ConfigurationHelper
 	{
 		private static IConfiguration? _configuration;
-		private static readonly object _lock = new object();
+		private static readonly Lock _lock = new();
 
-		public static IConfiguration GetConfiguration()
+		public static string? GetMusicFolderRoot()
+		{
+			return GetConfiguration()["MusicFolderRoot"];
+		}
+
+		private static IConfiguration GetConfiguration()
 		{
 			if (_configuration != null)
 			{
 				return _configuration;
 			}
 
-			var myLock = new Lock();
-
-			using (myLock.EnterScope())
+			using (_lock.EnterScope())
 			{
 				if (_configuration == null)
 				{
@@ -29,11 +32,6 @@ namespace MusicFinder
 			}
 
 			return _configuration;
-		}
-
-		public static string? GetMusicFolderRoot()
-		{
-			return GetConfiguration()["MusicFolderRoot"];
 		}
 	}
 }
