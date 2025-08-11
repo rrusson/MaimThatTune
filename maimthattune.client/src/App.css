@@ -207,25 +207,25 @@ th, td {
     margin-bottom: 1.5rem;
 }
 
-.result-correct {
-    background-color: #d4edda;
-}
-
-.result-wrong {
-    background-color: #f5c6c6;
-}
-
 .result-message {
     font-size: 1.5rem;
     margin-bottom: 1rem;
 }
 
+.result-correct {
+    background-color: #45a049;
+}
+
+.result-wrong {
+    background-color: #ff5252;
+}
+
 .result-correct-text {
-    color: #155724;
+    color: #333;
 }
 
 .result-wrong-text {
-    color: #721c24;
+    color: #333;
 }
 
 .result-details {
