@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
 
 interface GuessResult {
@@ -14,6 +14,8 @@ function App() {
 	const [result, setResult] = useState<GuessResult | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [gameStarted, setGameStarted] = useState(false);
+	const guessInputRef = useRef<HTMLInputElement>(null);
+	const nextTrackButtonRef = useRef<HTMLButtonElement>(null);
 
 	async function fetchRandomSegment() {
 		setLoading(true);
@@ -21,7 +23,7 @@ function App() {
 		setGuess('');
 		setAudioUrl(null);
 		setTrackId(null);
-		const response = await fetch('/api/music/random-segment');
+		const response = await fetch('/api/music/random-track');
 		if (response.ok) {
 			const blob = await response.blob();
 			const id = response.headers.get('x-track-id');
@@ -52,6 +54,18 @@ function App() {
 			setResult(data);
 		}
 	}
+
+	useEffect(() => {
+		if (audioUrl && guessInputRef.current) {
+			guessInputRef.current.focus();
+		}
+	}, [audioUrl]);
+
+	useEffect(() => {
+		if (result && nextTrackButtonRef.current) {
+			nextTrackButtonRef.current.focus();
+		}
+	}, [result]);
 
 	if (!gameStarted) {
 		return (
@@ -105,6 +119,7 @@ function App() {
 						placeholder="Enter artist or track name"
 						disabled={!!result || loading}
 						className="guess-input"
+						ref={guessInputRef}
 					/>
 					<button
 						type="submit"
@@ -141,6 +156,7 @@ function App() {
 					onClick={fetchRandomSegment}
 					disabled={loading}
 					className="next-track-button"
+					ref={nextTrackButtonRef}
 				>
 					{loading ? 'Loading...' : '🔄 Guess Another Track'}
 				</button>

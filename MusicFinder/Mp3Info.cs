@@ -1,35 +1,50 @@
-﻿using TagLib;
-
-namespace MusicFinder
+﻿namespace MusicFinder
 {
 	public class Mp3Info
 	{
-		private const string? Unknown = null;
-		private readonly string _filePath;
+		private const string Unknown = "Unknown";
+
+		/// <summary>
+		/// The file path of the MP3 file.
+		/// </summary>
+		public string FilePath { get; }
+
+		/// <summary>
+		/// The title of the track.
+		/// </summary>
+		public string Title { get; }
+
+		/// <summary>
+		/// The artist of the track.
+		/// </summary>
+		public string Artist { get; }
+
+		/// <summary>
+		/// The album of the track.
+		/// </summary>
+		public string Album { get; }
+
+		/// <summary>
+		/// The genre of the track.
+		/// </summary>
+		public string Genre { get; }
+
+		/// <summary>
+		/// The duration of the track.
+		/// </summary>
+		public TimeSpan Duration { get; }
 
 		public Mp3Info(string filePath)
 		{
-			_filePath = filePath;
-		}
+			FilePath = filePath;
 
-		public Tag GetAllProperties()
-		{
-			using var file = TagLib.File.Create(_filePath);
-			return file.Tag;
-		}
+			using var file = TagLib.File.Create(filePath);
 
-		public string GetTitle() => GetAllProperties().Title ?? nameof(Unknown);
-
-		public string GetArtist() => GetAllProperties().FirstPerformer ?? nameof(Unknown);
-
-		public string GetAlbum() => GetAllProperties().Album ?? nameof(Unknown);
-
-		public string GetGenre() => GetAllProperties().FirstGenre ?? nameof(Unknown);
-
-		public TimeSpan GetDuration()
-		{
-			using var file = TagLib.File.Create(_filePath);
-			return file.Properties.Duration;
+			Title = file.Tag.Title ?? Unknown;
+			Artist = file.Tag.FirstPerformer ?? Unknown;
+			Album = file.Tag.Album ?? Unknown;
+			Genre = file.Tag.FirstGenre ?? Unknown;
+			Duration = file.Properties.Duration;
 		}
 	}
 }

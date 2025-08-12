@@ -17,39 +17,58 @@ namespace MaimThatTune.Server.Controllers
 	{
 		private static readonly ConcurrentDictionary<string, TrackMetadata> _trackMetadataMap = new();
 		private static readonly RandomTrackPicker _picker = new();
+		private static readonly string[] InvalidArtistValues = { "Unknown", "Various", "Various Artists", string.Empty };
+		private static readonly string[] InvalidTitleValues = { "Unknown", string.Empty };
 
 		/// <summary>
 		/// Streams a 5-second segment of a random MP3 file and returns a track ID.
 		/// </summary>
 		/// <returns>MP3 audio segment and track ID</returns>
 		[ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-		[HttpGet("random-segment")]
+		[HttpGet("random-track")]
 		public async Task<IActionResult> GetRandomSegmentAsync()
 		{
-			var trackPath = await _picker.GetRandomTrackAsync().ConfigureAwait(false);
+			const int maxRetries = 10; // Prevent infinite loops
 
-			var fileServer = new FileServer();
-			var stream = await fileServer.GetFile(trackPath).ConfigureAwait(false);
-
-			if (stream == null)
+			for (int attempt = 0; attempt < maxRetries; attempt++)
 			{
-				return NotFound();
+				var trackPath = await _picker.GetRandomTrackAsync().ConfigureAwait(false);
+				if (trackPath == null)
+				{
+					continue;
+				}
+
+				var mp3Info = new Mp3Info(trackPath);
+
+				// Check if artist and title are valid
+				if (InvalidArtistValues.Contains(mp3Info.Artist, StringComparer.OrdinalIgnoreCase) ||
+					InvalidTitleValues.Contains(mp3Info.Title, StringComparer.OrdinalIgnoreCase))
+				{
+					continue; // Try another track
+				}
+
+				var fileServer = new FileServer();
+				var stream = await fileServer.GetFile(trackPath).ConfigureAwait(false);
+
+				if (stream == null)
+				{
+					continue; // Try another track
+				}
+
+				var trackId = Guid.NewGuid().ToString();
+
+				_trackMetadataMap[trackId] = new TrackMetadata
+				{
+					Artist = mp3Info.Artist,
+					Track = mp3Info.Title
+				};
+
+				Response.Headers.Append("X-Track-Id", trackId);
+				return File(stream, "audio/mpeg", enableRangeProcessing: true);
 			}
 
-			var mp3Info = new Mp3Info(trackPath!);
-			var trackInfo = mp3Info.GetAllProperties();
-			var artist = trackInfo.FirstPerformer ?? "Unknown";
-			var track = trackInfo.Title ?? "Unknown";
-			var trackId = Guid.NewGuid().ToString();
-
-			_trackMetadataMap[trackId] = new TrackMetadata
-			{
-				Artist = artist,
-				Track = track
-			};
-
-			Response.Headers.Append("X-Track-Id", trackId);
-			return File(stream, "audio/mpeg", enableRangeProcessing: true);
+			// If we've tried maxRetries times and still no valid track, return NotFound
+			return NotFound("No valid tracks found after multiple attempts");
 		}
 
 		/// <summary>

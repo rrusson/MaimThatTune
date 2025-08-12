@@ -85,7 +85,7 @@
 		}
 
 		/// <summary>
-		/// Trim and lowercase the answer, and don't count "The " at the start
+		/// Trim and lowercase the answer, replace diacritics, remove punctuation, and don't count "The " at the start
 		/// </summary>
 		/// <param name="input">Input string to normalize</param>
 		/// <returns>A standardized string</returns>
@@ -99,6 +99,9 @@
 
 			// Consider ampersand as "and"
 			input = input.Replace("&", " and ");
+
+			// Replace diacritics with basic ASCII equivalents (give the user a break)
+			input = input.Normalize(System.Text.NormalizationForm.FormD);
 
 			//Remove punctuation and extra spaces
 			input = new string([.. input.Where(c => !char.IsPunctuation(c))]);
