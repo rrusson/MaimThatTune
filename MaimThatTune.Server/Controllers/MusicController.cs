@@ -41,7 +41,7 @@ namespace MaimThatTune.Server.Controllers
 			var artist = trackInfo.FirstPerformer ?? "Unknown";
 			var track = trackInfo.Title ?? "Unknown";
 			var trackId = Guid.NewGuid().ToString();
-			
+
 			_trackMetadataMap[trackId] = new TrackMetadata
 			{
 				Artist = artist,
@@ -70,9 +70,8 @@ namespace MaimThatTune.Server.Controllers
 				return NotFound();
 			}
 
-			var guess = request.Guess.Trim();
-			var isArtistCorrect = string.Equals(guess, metadata.Artist, StringComparison.OrdinalIgnoreCase);
-			var isTrackCorrect = string.Equals(guess, metadata.Track, StringComparison.OrdinalIgnoreCase);
+			var isArtistCorrect = SloppyAnswerComparer.AreCloseEnough(request.Guess, metadata.Artist);
+			var isTrackCorrect = SloppyAnswerComparer.AreCloseEnough(request.Guess, metadata.Track);
 			var isCorrect = isArtistCorrect || isTrackCorrect;
 
 			// Remove the track from the map after guessing

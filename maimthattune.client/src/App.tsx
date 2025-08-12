@@ -61,7 +61,7 @@ function App() {
 						🎵 Maim That Tune! 🎵
 					</h1>
 					<p className="start-modal-description">
-						Listen to music clips and guess the artist or track name!
+						Listen to music clips and guess the artist or track name.
 					</p>
 					<button
 						onClick={startGame}
@@ -74,11 +74,15 @@ function App() {
 		);
 	}
 
+	// Precompute isExactMatch for partial credit
+	const isExactMatch = result && result.isCorrect &&
+		(result.artist.toLowerCase() !== guess.toLowerCase() && result.track.toLowerCase() !== guess.toLowerCase());
+
 	return (
 		<div className="game-container">
 			<h1 className="game-title">🎵 Maim That Tune! 🎵</h1>
 			<p className="game-description">
-				Listen to the music clip and try to guess the <strong>artist name</strong> or <strong>track name</strong>!
+				Listen to the music clip and try to guess the <strong>artist name</strong> or <strong>track name</strong>.
 			</p>
 
 			{audioUrl && (
@@ -113,12 +117,16 @@ function App() {
 			</form>
 
 			{result && (
-				<div className={`result-container ${result.isCorrect ? 'result-correct' : 'result-wrong'}`}>
+				<div className={`result-container ${isExactMatch ? 'result-partial-credit' : result.isCorrect ? 'result-correct' : 'result-wrong'}`}>
 					<div className="result-message">
 						{result.isCorrect ? (
-							<span className="result-correct-text">🎉 Correct! 🎉</span>
+							isExactMatch ? (
+                                <span className="result-text-desaturated">🧲💣❤️ Close Enough ❤️💣🧲</span>
+							) : (
+								<span className="result-text">🎉 Correct! 🎉</span>
+							)
 						) : (
-							<span className="result-wrong-text">😢 Wrong! 😢</span>
+								<span className="result-text">😢 Wrong! 😢</span>
 						)}
 					</div>
 					<div className="result-details">
