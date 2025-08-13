@@ -27,11 +27,11 @@ export function generateRandomNotes(): NoteConfig[] {
 	return Array.from({ length: NUM_NOTES }, () => ({
 		symbol: MUSIC_SYMBOLS[getRandomInt(0, MUSIC_SYMBOLS.length - 1)],
 		left: getRandomInt(5, 95), // percent
-		bottom: getRandomInt(10, 40), // px
+		bottom: getRandomInt(5, 50), // px
 		fontSize: getRandomInt(4, 8), // rem
-		animationDuration: getRandomInt(25, 45) / 10.0, // 2.5s - 4.5s
+		animationDuration: getRandomInt(25, 50) / 10.0, // 2.5s - 5s
 		animationDelay: getRandomInt(0, 20) / 10.0, // 0s - 2.0s
-		fadeInDelay: getRandomInt(0, 15) / 10.0, // 0s - 1.5s for staggered fade-in
+		fadeInDelay: getRandomInt(2, 20) / 10.0, // for staggered fade-in
 	}));
 }
 
