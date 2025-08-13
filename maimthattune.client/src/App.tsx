@@ -1,5 +1,8 @@
 ﻿import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
+import { MusicLoadingOverlay } from './components/MusicLoadingAnimation';
+
+// --- Main App component ---
 
 interface GuessResult {
 	isCorrect: boolean;
@@ -14,8 +17,20 @@ function App() {
 	const [result, setResult] = useState<GuessResult | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [gameStarted, setGameStarted] = useState(false);
+	const [showLoadingAnim, setShowLoadingAnim] = useState(false);
 	const guessInputRef = useRef<HTMLInputElement>(null);
 	const nextTrackButtonRef = useRef<HTMLButtonElement>(null);
+
+	// Show animation immediately on loading, fade out when loading ends
+	useEffect(() => {
+		if (loading) {
+			setShowLoadingAnim(true);
+		} else if (showLoadingAnim) {
+			// Fade out animation, then hide
+			const timeout = setTimeout(() => setShowLoadingAnim(false), 700);
+			return () => clearTimeout(timeout);
+		}
+	}, [loading, showLoadingAnim]);
 
 	async function fetchRandomSegment() {
 		setLoading(true);
@@ -94,6 +109,10 @@ function App() {
 
 	return (
 		<div className="game-container">
+			{showLoadingAnim && (
+				<MusicLoadingOverlay fadingOut={!loading} />
+			)}
+
 			<h1 className="game-title">🎵 Maim That Tune! 🎵</h1>
 			<p className="game-description">
 				Listen to the music clip and try to guess the <strong>artist name</strong> or <strong>track name</strong>.

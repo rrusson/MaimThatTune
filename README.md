@@ -1,6 +1,7 @@
 # MaimThatTune
-A simple music guessing game built with React.
+A simple music guessing game built with React and some C#.
 
 ## Features
 - Guess the song or artist based on streaming audio
-- Fun graphics and user interface coming soon
+- "Close enough" guess matching
+- Some UI motion to enhance visual interest

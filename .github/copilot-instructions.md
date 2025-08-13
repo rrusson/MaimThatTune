@@ -1,4 +1,5 @@
 - Always use curly braces `{}` for all control structures (if, else, for, foreach, while, etc.), even wrapping single-line statements.
+- Don't add comments when a function name, variable name, or block make the purpose of the code fairly obvious. Prefer "self-documenting" code with good naming.
 - Insert a single blank line (CRLF) between method and function definitions. Adhere to StyleCop and commonly accepted C# (or TypeScript) formatting best practices throughout all code.
 - Adhere to SOLID design principles and design patterns where applicable.
 - Strive for small, single-responsibility methods. Refactor larger methods (>50 lines) into smaller pieces when practical.
