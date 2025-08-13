@@ -12,9 +12,7 @@
 			var segmentLength = TimeSpan.FromSeconds(5);
 			var stream = new MemoryStream();
 
-			// For simplicity, stream the first 5 seconds (may not be frame-accurate)
-			// TagLib# does not support segment extraction, so we send the full file for now
-			// In production, use a library like NAudio or ffmpeg for accurate segmenting
+			// TODO: Let's use a library like NAudio or ffmpeg to only stream the first 10 seconds, to conserve bandwidth
 			await using (var fs = System.IO.File.OpenRead(trackPath))
 			{
 				await fs.CopyToAsync(stream).ConfigureAwait(false);

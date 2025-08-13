@@ -15,15 +15,15 @@ namespace MaimThatTune.Server.Controllers
 	[Route("api/[controller]")]
 	public partial class MusicController : ControllerBase
 	{
-		private static readonly ConcurrentDictionary<string, TrackMetadata> _trackMetadataMap = new();
+		private static readonly ConcurrentDictionary<string, Mp3Info> _trackMetadataMap = new();
 		private static readonly RandomTrackPicker _picker = new();
 		private static readonly string[] InvalidArtistValues = { "Unknown", "Various", "Various Artists", string.Empty };
 		private static readonly string[] InvalidTitleValues = { "Unknown", string.Empty };
 
 		/// <summary>
-		/// Streams a 5-second segment of a random MP3 file and returns a track ID.
+		/// Streams a random MP3 file and returns a track ID
 		/// </summary>
-		/// <returns>MP3 audio segment and track ID</returns>
+		/// <returns>MP3 audio with a track ID header</returns>
 		[ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 		[HttpGet("random-track")]
 		public async Task<IActionResult> GetRandomSegmentAsync()
@@ -41,8 +41,8 @@ namespace MaimThatTune.Server.Controllers
 				var mp3Info = new Mp3Info(trackPath);
 
 				// Check if artist and title are valid
-				if (InvalidArtistValues.Contains(mp3Info.Artist, StringComparer.OrdinalIgnoreCase) ||
-					InvalidTitleValues.Contains(mp3Info.Title, StringComparer.OrdinalIgnoreCase))
+				if (InvalidArtistValues.Contains(mp3Info.Artist, StringComparer.OrdinalIgnoreCase)
+					|| InvalidTitleValues.Contains(mp3Info.Title, StringComparer.OrdinalIgnoreCase))
 				{
 					continue; // Try another track
 				}
@@ -55,13 +55,11 @@ namespace MaimThatTune.Server.Controllers
 					continue; // Try another track
 				}
 
+#if DEBUG
+				Task.Delay(3000).Wait(); // Simulate some delay for the next track
+#endif
 				var trackId = Guid.NewGuid().ToString();
-
-				_trackMetadataMap[trackId] = new TrackMetadata
-				{
-					Artist = mp3Info.Artist,
-					Track = mp3Info.Title
-				};
+				_trackMetadataMap[trackId] = mp3Info;
 
 				Response.Headers.Append("X-Track-Id", trackId);
 				return File(stream, "audio/mpeg", enableRangeProcessing: true);
@@ -89,9 +87,8 @@ namespace MaimThatTune.Server.Controllers
 				return NotFound();
 			}
 
-			var isArtistCorrect = SloppyAnswerComparer.AreCloseEnough(request.Guess, metadata.Artist);
-			var isTrackCorrect = SloppyAnswerComparer.AreCloseEnough(request.Guess, metadata.Track);
-			var isCorrect = isArtistCorrect || isTrackCorrect;
+			var isCorrect = SloppyAnswerComparer.AreCloseEnough(request.Guess, metadata.Artist)
+				|| SloppyAnswerComparer.AreCloseEnough(request.Guess, metadata.Title);
 
 			// Remove the track from the map after guessing
 			_trackMetadataMap.TryRemove(request.TrackId, out _);
@@ -100,7 +97,7 @@ namespace MaimThatTune.Server.Controllers
 			{
 				IsCorrect = isCorrect,
 				Artist = metadata.Artist,
-				Track = metadata.Track
+				Track = metadata.Title
 			});
 		}
 	}

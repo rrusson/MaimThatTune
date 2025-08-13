@@ -2,7 +2,7 @@
 
 // Music symbols for the loading animation
 const MUSIC_SYMBOLS = ['𝄞', '𝄞', '𝄢', '♯', '♭', '♮', '𝄽', '𝄽', '𝅗𝅥', '𝅘𝅥', '𝅘𝅥', '𝅘𝅥𝅮', '𝅘𝅥𝅯', '♫', '♫', '♬', '♬'];
-const NUM_NOTES = 6;
+const NUM_NOTES = window.innerWidth < 800 ? 5 : 8;
 
 interface MusicLoadingOverlayProps {
 	fadingOut: boolean;
@@ -22,6 +22,7 @@ function getRandomInt(min: number, max: number): number {
 	return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function generateRandomNotes(): NoteConfig[] {
 	return Array.from({ length: NUM_NOTES }, () => ({
 		symbol: MUSIC_SYMBOLS[getRandomInt(0, MUSIC_SYMBOLS.length - 1)],

@@ -4,6 +4,7 @@
 	max-width: 1280px;
 	margin: 0 auto;
 	padding: 2rem;
+	font-family: Michroma, system-ui, sans-serif;
 	text-align: center;
 }
 
@@ -37,24 +38,24 @@ th, td {
 .start-modal-title {
 	color: #333;
 	margin-bottom: 2rem;
-	font-size: 2.5rem;
+	font-size: 1.6rem;
 }
 
 .start-modal-description {
 	color: #666;
 	margin-bottom: 2rem;
-	font-size: 1.2rem;
+	font-size: 1rem;
 }
 
 .start-button {
-	font-size: 2rem;
+	font-size: 1.6rem;
 	padding: 1rem 3rem;
 	background-color: #2196F3;
 	color: white;
 	border: none;
 	border-radius: 15px;
 	cursor: pointer;
-	font-weight: bold;
+	font-weight: 600;
 	text-transform: uppercase;
 	letter-spacing: 2px;
 	box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
@@ -74,12 +75,14 @@ th, td {
 }
 
 .game-title {
+	font-size: 1.6rem;
 	text-align: center;
 	color: #636363;
 }
 
 .game-description {
 	text-align: center;
+	font-size: 0.9rem;
 	color: #666;
 	margin-bottom: 2rem;
 }
@@ -247,7 +250,7 @@ th, td {
 }
 
 .next-track-button {
-	padding: 1rem 2rem;
+	padding: 1rem 2.8rem;
 	font-size: 1.1rem;
 	background-color: #2196F3;
 	color: white;

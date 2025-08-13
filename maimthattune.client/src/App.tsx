@@ -115,7 +115,7 @@ function App() {
 
 			<h1 className="game-title">🎵 Maim That Tune! 🎵</h1>
 			<p className="game-description">
-				Listen to the music clip and try to guess the <strong>artist name</strong> or <strong>track name</strong>.
+				Listen to the music clip and try to <br/>guess the <strong>artist name</strong> or <strong>track name</strong>.
 			</p>
 
 			{audioUrl && (
@@ -145,7 +145,7 @@ function App() {
 						disabled={!guess || !!result || loading}
 						className="guess-button"
 					>
-						Guess
+						GUESS
 					</button>
 				</div>
 			</form>
@@ -155,12 +155,12 @@ function App() {
 					<div className="result-message">
 						{result.isCorrect ? (
 							isExactMatch ? (
-                                <span className="result-text-desaturated">🧲💣❤️ Close Enough ❤️💣🧲</span>
+                                <span className="result-text-desaturated">🧲💣❤️ Close Enough</span>
 							) : (
-								<span className="result-text">🎉 Correct! 🎉</span>
+									<span className="result-text">👍 Correct! 👍</span>
 							)
 						) : (
-								<span className="result-text">😢 Wrong! 😢</span>
+								<span className="result-text">👎 Wrong! 👎</span>
 						)}
 					</div>
 					<div className="result-details">
