@@ -48,7 +48,7 @@ namespace MaimThatTune.Server.Controllers
 				}
 
 				var fileServer = new FileServer();
-				var stream = await fileServer.GetFile(trackPath).ConfigureAwait(false);
+				var stream = await fileServer.GetAudioAsync(trackPath).ConfigureAwait(false);
 
 				if (stream == null)
 				{
@@ -56,7 +56,7 @@ namespace MaimThatTune.Server.Controllers
 				}
 
 #if DEBUG
-				Task.Delay(3000).Wait(); // Simulate some delay for the next track
+				Task.Delay(7000).Wait(); // Simulate some delay for the next track
 #endif
 				var trackId = Guid.NewGuid().ToString();
 				_trackMetadataMap[trackId] = mp3Info;

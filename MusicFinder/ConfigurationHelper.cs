@@ -12,6 +12,11 @@ namespace MusicFinder
 			return GetConfiguration()["MusicFolderRoot"];
 		}
 
+		public static string? GetSecondsAudioToStream()
+		{
+			return GetConfiguration()["SecondsAudioToStream"];
+		}
+
 		private static IConfiguration GetConfiguration()
 		{
 			if (_configuration != null)
