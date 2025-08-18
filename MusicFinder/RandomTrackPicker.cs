@@ -78,12 +78,12 @@
 
 			var mp3Files = await GetMp3FilesFromFolderAsync(leafFolder);
 
-			if (mp3Files.Count() == 0)
+			if (mp3Files.Length == 0)
 			{
 				return null;
 			}
 
-			int randomIndex = _random.Next(mp3Files.Count());
+			int randomIndex = _random.Next(mp3Files.Length);
 			return mp3Files[randomIndex];
 		}
 

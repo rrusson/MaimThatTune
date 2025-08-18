@@ -16,8 +16,6 @@ namespace MaimThatTune.Server.Controllers
 	public partial class MusicController : ControllerBase
 	{
 		private static readonly ConcurrentDictionary<string, Mp3Info> _trackMetadataMap = new();
-		private static readonly string[] InvalidArtistValues = { "Unknown", "Various", "Various Artists", string.Empty };
-		private static readonly string[] InvalidTitleValues = { "Unknown", string.Empty };
 
 		/// <summary>
 		/// Gets available genres from the music directory
@@ -55,10 +53,7 @@ namespace MaimThatTune.Server.Controllers
 				}
 
 				var mp3Info = new Mp3Info(trackPath);
-
-				// Check if artist and title are valid
-				if (InvalidArtistValues.Contains(mp3Info.Artist, StringComparer.OrdinalIgnoreCase)
-					|| InvalidTitleValues.Contains(mp3Info.Title, StringComparer.OrdinalIgnoreCase))
+				if (mp3Info.IsInvalidArtist() || mp3Info.IsInvalidTitle())
 				{
 					continue; // Try another track
 				}
@@ -70,9 +65,8 @@ namespace MaimThatTune.Server.Controllers
 				{
 					continue; // Try another track
 				}
-
 #if DEBUG
-				Task.Delay(7000).Wait(); // Simulate some delay for the next track
+				Task.Delay(5000).Wait(); // Simulate some delay to view wait behavior when running locally
 #endif
 				var trackId = Guid.NewGuid().ToString();
 				_trackMetadataMap[trackId] = mp3Info;
