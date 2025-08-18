@@ -2,8 +2,6 @@
 import './App.css';
 import { MusicLoadingOverlay } from './components/MusicLoadingAnimation';
 
-// --- Main App component ---
-
 interface GuessResult {
 	isCorrect: boolean;
 	artist: string;
@@ -12,25 +10,54 @@ interface GuessResult {
 
 function App() {
 	const [audioUrl, setAudioUrl] = useState<string | null>(null);
-	const [trackId, setTrackId] = useState<string | null>(null);
-	const [guess, setGuess] = useState('');
-	const [result, setResult] = useState<GuessResult | null>(null);
-	const [loading, setLoading] = useState(false);
 	const [gameStarted, setGameStarted] = useState(false);
+	const [genres, setGenres] = useState<string[]>([]);
+	const [guess, setGuess] = useState('');
+	const [loading, setLoading] = useState(false);
+	const [result, setResult] = useState<GuessResult | null>(null);
+	const [selectedGenre, setSelectedGenre] = useState<string>('ALL');
+	const [showGenreDropdown, setShowGenreDropdown] = useState(false);
 	const [showLoadingAnim, setShowLoadingAnim] = useState(false);
+	const [trackId, setTrackId] = useState<string | null>(null);
 	const guessInputRef = useRef<HTMLInputElement>(null);
 	const nextTrackButtonRef = useRef<HTMLButtonElement>(null);
+	const genresLoadedRef = useRef<boolean>(false);
 
 	// Show animation immediately on loading, fade out when loading ends
 	useEffect(() => {
 		if (loading) {
 			setShowLoadingAnim(true);
 		} else if (showLoadingAnim) {
-			// Fade out animation, then hide
 			const timeout = setTimeout(() => setShowLoadingAnim(false), 700);
 			return () => clearTimeout(timeout);
 		}
 	}, [loading, showLoadingAnim]);
+
+	useEffect(() => {
+		async function loadGenres() {
+			if (genresLoadedRef.current) {
+				return;
+			}
+			
+			genresLoadedRef.current = true;
+
+			try {
+				const response = await fetch('/api/music/genres');
+
+				if (response.ok) {
+					const genreList = await response.json();
+					if (genreList.length > 0) {
+						setGenres(['ALL', ...genreList]);
+						setShowGenreDropdown(true);
+					}
+				}
+			} catch (error) {
+				console.error('Failed to load genres:', error);
+				genresLoadedRef.current = false; // Reset on error and try again
+			}
+		}
+		loadGenres();
+	}, []);
 
 	async function fetchRandomSegment() {
 		setLoading(true);
@@ -38,7 +65,9 @@ function App() {
 		setGuess('');
 		setAudioUrl(null);
 		setTrackId(null);
-		const response = await fetch('/api/music/random-track');
+		
+		const genreParam = selectedGenre !== 'ALL' ? `?genre=${encodeURIComponent(selectedGenre)}` : '';
+		const response = await fetch(`/api/music/random-track${genreParam}`);
 		if (response.ok) {
 			const blob = await response.blob();
 			const id = response.headers.get('x-track-id');
@@ -62,7 +91,7 @@ function App() {
 		const response = await fetch('/api/music/guess', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ trackId, guess })
+			body: JSON.stringify({ trackId, guess, genre: selectedGenre })
 		});
 		if (response.ok) {
 			const data = await response.json();
@@ -148,6 +177,22 @@ function App() {
 						GUESS
 					</button>
 				</div>
+				{showGenreDropdown && (
+					<div className="genre-dropdown-container">
+						<select
+							value={selectedGenre}
+							onChange={e => setSelectedGenre(e.target.value)}
+							disabled={loading}
+							className="genre-dropdown"
+						>
+							{genres.map(genre => (
+								<option key={genre} value={genre}>
+									Genre: {genre}
+								</option>
+							))}
+						</select>
+					</div>
+				)}
 			</form>
 
 			{result && (

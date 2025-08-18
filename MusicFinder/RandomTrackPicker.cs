@@ -1,18 +1,57 @@
 ﻿namespace MusicFinder
 {
-	public class RandomTrackPicker
+	public static class RandomTrackPicker
 	{
 		private static readonly Random _random = new();
+		private static readonly string[] _invalidGenres = { "$RECYCLE.BIN", "_Incoming", "_Playlists", "Music Cache", "Uncategorized", "Utilities", "Various Artists", };
+
+
+		/// <summary>
+		/// Gets available genres (first-level directories) from the root music folder
+		/// </summary>
+		/// <param name="musicFolderRoot">Optional override for the music folder root. If null, reads from configuration</param>
+		/// <returns>Array of genre names</returns>
+		public static async Task<string?[]> GetAvailableGenresAsync(string? musicFolderRoot = null)
+		{
+			musicFolderRoot ??= ConfigurationHelper.GetMusicFolderRoot();
+
+			if (string.IsNullOrEmpty(musicFolderRoot) || !Directory.Exists(musicFolderRoot))
+			{
+				return [];
+			}
+
+			return await Task.Run(() =>
+			{
+				try
+				{
+					var directories = Directory.GetDirectories(musicFolderRoot)
+						.Select(Path.GetFileName)
+						.Where(name => !_invalidGenres.Contains(name, StringComparer.OrdinalIgnoreCase))
+						.OrderBy(name => name)
+						.ToArray();
+
+					return directories!;
+				}
+				catch (UnauthorizedAccessException)
+				{
+					return [];
+				}
+				catch (DirectoryNotFoundException)
+				{
+					return [];
+				}
+			});
+		}
 
 		/// <summary>
 		/// Returns a random MP3 track from a randomly selected folder within the music directory structure.
 		/// </summary>
 		/// <param name="musicFolderRoot">Optional override for the music folder root. If null, reads from configuration.</param>
+		/// <param name="genre">Optional genre filter. If provided, only searches within that genre subfolder.</param>
 		/// <returns>The full path to an MP3 file</returns>
 		/// <exception cref="DirectoryNotFoundException">Thrown if the root directory (from config) isn't found</exception>
-		public async Task<string?> GetRandomTrackAsync(string? musicFolderRoot = null)
+		public static async Task<string?> GetRandomTrackAsync(string? musicFolderRoot = null, string? genre = null)
 		{
-			// Use provided path or read from modern configuration
 			musicFolderRoot ??= ConfigurationHelper.GetMusicFolderRoot();
 
 			if (string.IsNullOrEmpty(musicFolderRoot) || !Directory.Exists(musicFolderRoot))
@@ -20,50 +59,55 @@
 				throw new DirectoryNotFoundException($"Music folder root not found or doesn't exist: {musicFolderRoot}");
 			}
 
-			// Find a random leaf folder that contains MP3 files
+			// If genre is specified and not "ALL", look only in that genre subfolder
+			if (!string.IsNullOrEmpty(genre) && genre != "ALL")
+			{
+				var genrePath = Path.Combine(musicFolderRoot, genre);
+				if (Directory.Exists(genrePath))
+				{
+					musicFolderRoot = genrePath;
+				}
+			}
+
 			var leafFolder = await FindRandomMp3FolderAsync(musicFolderRoot);
 
 			if (leafFolder == null)
 			{
-				return null; // No folders with MP3 files found
+				return null;
 			}
 
-			// Get all MP3 files from the leaf folder and pick one randomly
 			var mp3Files = await GetMp3FilesFromFolderAsync(leafFolder);
 
-			if (mp3Files.Count == 0)
+			if (mp3Files.Count() == 0)
 			{
-				return null; // No MP3 files found in the leaf folder
+				return null;
 			}
 
-			// Return a random MP3 file
-			int randomIndex = _random.Next(mp3Files.Count);
+			int randomIndex = _random.Next(mp3Files.Count());
 			return mp3Files[randomIndex];
 		}
 
-		private async Task<string?> FindRandomMp3FolderAsync(string currentPath)
+		private static async Task<string?> FindRandomMp3FolderAsync(string currentPath)
 		{
 			return await Task.Run(() => FindRandomLeafFolder(currentPath));
 		}
 
-		private string? FindRandomLeafFolder(string currentPath)
+		private static string? FindRandomLeafFolder(string currentPath)
 		{
 			try
 			{
-				// Get all subdirectories in the current path
 				var subdirectories = Directory.GetDirectories(currentPath);
 
 				// If no subdirectories, this is a potential leaf folder
 				if (subdirectories.Length == 0)
 				{
-					// Check if this folder contains MP3 files
 					string[] mp3Files = Directory.GetFiles(currentPath, "*.mp3", SearchOption.TopDirectoryOnly);
 					return mp3Files.Length > 0 ? currentPath : null;
 				}
 
 				// Randomly select a subdirectory and recurse
 				var attempts = 0;
-				var maxAttempts = subdirectories.Length * 3; // Allow multiple attempts to find a valid path
+				var maxAttempts = subdirectories.Length * 3;
 
 				while (attempts < maxAttempts)
 				{
@@ -78,18 +122,10 @@
 							return result;
 						}
 					}
-					catch (UnauthorizedAccessException)
-					{
-						// Skip this folder and try another
-					}
-					catch (DirectoryNotFoundException)
-					{
-						// Skip this folder and try another
-					}
-					catch (PathTooLongException)
-					{
-						// Skip this folder and try another
-					}
+					// Just skip this folder for these exceptions
+					catch (UnauthorizedAccessException) { }
+					catch (DirectoryNotFoundException) { }
+					catch (PathTooLongException) { }
 
 					attempts++;
 				}
@@ -113,30 +149,21 @@
 			}
 		}
 
-		private async Task<List<string>> GetMp3FilesFromFolderAsync(string folderPath)
+		private static async Task<string[]> GetMp3FilesFromFolderAsync(string folderPath)
 		{
-			var mp3Files = new List<string>();
+			string[] mp3Files = [];
 
 			await Task.Run(() =>
 			{
 				try
 				{
 					// Get MP3 files only from the specified folder (not recursive)
-					string[] files = Directory.GetFiles(folderPath, "*.mp3", SearchOption.TopDirectoryOnly);
-					mp3Files.AddRange(files);
+					mp3Files = Directory.GetFiles(folderPath, "*.mp3", SearchOption.TopDirectoryOnly);
 				}
-				catch (UnauthorizedAccessException)
-				{
-					// Skip directories we don't have access to
-				}
-				catch (DirectoryNotFoundException)
-				{
-					// Skip directories that don't exist
-				}
-				catch (PathTooLongException)
-				{
-					// Skip paths that are too long
-				}
+				// Ignore these exceptions
+				catch (UnauthorizedAccessException) { }
+				catch (DirectoryNotFoundException) { }
+				catch (PathTooLongException) { }
 			});
 
 			return mp3Files;

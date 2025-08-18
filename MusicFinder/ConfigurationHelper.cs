@@ -17,6 +17,12 @@ namespace MusicFinder
 			return GetConfiguration()["SecondsAudioToStream"];
 		}
 
+		public static bool GetUseCategories()
+		{
+			var value = GetConfiguration()["UseCategories"];
+			return bool.TryParse(value, out bool result) && result;
+		}
+
 		private static IConfiguration GetConfiguration()
 		{
 			if (_configuration != null)

@@ -9,30 +9,46 @@ using MusicFinder;
 namespace MaimThatTune.Server.Controllers
 {
 	/// <summary>
-	/// Provides endpoints for streaming random MP3 segments and artist/track guessing.
+	/// Provides endpoints for streaming random MP3 segments, getting available music genres, and artist/track guessing
 	/// </summary>
 	[ApiController]
 	[Route("api/[controller]")]
 	public partial class MusicController : ControllerBase
 	{
 		private static readonly ConcurrentDictionary<string, Mp3Info> _trackMetadataMap = new();
-		private static readonly RandomTrackPicker _picker = new();
 		private static readonly string[] InvalidArtistValues = { "Unknown", "Various", "Various Artists", string.Empty };
 		private static readonly string[] InvalidTitleValues = { "Unknown", string.Empty };
 
 		/// <summary>
+		/// Gets available genres from the music directory
+		/// </summary>
+		/// <returns>List of available genres</returns>
+		[HttpGet("genres")]
+		public async Task<IActionResult> GetGenresAsync()
+		{
+			if (!ConfigurationHelper.GetUseCategories())
+			{
+				return Ok(new List<string>());
+			}
+
+			var genres = await RandomTrackPicker.GetAvailableGenresAsync().ConfigureAwait(false);
+			return Ok(genres);
+		}
+
+		/// <summary>
 		/// Streams a random MP3 file and returns a track ID
 		/// </summary>
+		/// <param name="genre">Optional genre filter</param>
 		/// <returns>MP3 audio with a track ID header</returns>
 		[ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 		[HttpGet("random-track")]
-		public async Task<IActionResult> GetRandomSegmentAsync()
+		public async Task<IActionResult> GetRandomSegmentAsync([FromQuery] string? genre = null)
 		{
-			const int maxRetries = 10; // Prevent infinite loops
+			const int maxRetries = 10;
 
 			for (int attempt = 0; attempt < maxRetries; attempt++)
 			{
-				var trackPath = await _picker.GetRandomTrackAsync().ConfigureAwait(false);
+				var trackPath = await RandomTrackPicker.GetRandomTrackAsync(null, genre).ConfigureAwait(false);
 				if (trackPath == null)
 				{
 					continue;

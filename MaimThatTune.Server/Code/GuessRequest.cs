@@ -3,18 +3,24 @@
 	public partial class MusicController
 	{
 		/// <summary>
-		/// Request model for artist or track guess.
+		/// Request model for artist or track guess
 		/// </summary>
 		public class GuessRequest
 		{
 			/// <summary>
-			/// The track ID provided by the random-track endpoint.
+			/// The track ID provided by the random-track endpoint
 			/// </summary>
 			public string TrackId { get; set; } = string.Empty;
+
 			/// <summary>
-			/// The user's guess for the artist or track name.
+			/// The user's guess for the artist or track name
 			/// </summary>
 			public string Guess { get; set; } = string.Empty;
+
+			/// <summary>
+			/// The selected genre/category for filtering tracks
+			/// </summary>
+			public string? Genre { get; set; }
 		}
 	}
 }

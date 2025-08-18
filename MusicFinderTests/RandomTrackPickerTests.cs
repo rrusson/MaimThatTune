@@ -1,4 +1,6 @@
-﻿namespace MusicFinderTests
+﻿using MusicFinder;
+
+namespace MusicFinderTests
 {
 	[TestClass]
 	public sealed class RandomTrackPickerTests
@@ -6,7 +8,6 @@
 		[TestMethod]
 		public async Task GetRandomTrack_FindsANonNullPath()
 		{
-			var picker = new MusicFinder.RandomTrackPicker();
 			string? track;
 
 			// Get the config value using the helper
@@ -16,11 +17,11 @@
 			if (string.IsNullOrEmpty(configValue) || !Directory.Exists(configValue))
 			{
 				var tempMusicFolder = CreateTestMusicStructure();
-				track = await picker.GetRandomTrackAsync(tempMusicFolder);
+				track = await RandomTrackPicker.GetRandomTrackAsync(tempMusicFolder);
 			}
 			else
 			{
-				track = await picker.GetRandomTrackAsync();
+				track = await RandomTrackPicker.GetRandomTrackAsync();
 			}
 
 			Assert.IsNotNull(track);
