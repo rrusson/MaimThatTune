@@ -41,6 +41,20 @@ namespace MusicFinderTests
 		}
 
 		[TestMethod]
+		public void AreCloseEnough_MessyFeaturingArtist_ReturnsTrue()
+		{
+			var result = SloppyAnswerComparer.AreCloseEnough("The Beatles (feat. Nine Inch Nails)", "The Beetles");
+			Assert.IsTrue(result);
+		}
+
+		[TestMethod]
+		public void AreCloseEnough_MessyMultipleArtists_ReturnsTrue()
+		{
+			var result = SloppyAnswerComparer.AreCloseEnough("The Beatles, Ozzy Osborne, and Doris Day", "The Beetles");
+			Assert.IsTrue(result);
+		}
+
+		[TestMethod]
 		public void AreCloseEnough_NullOrEmpty_ReturnsFalse()
 		{
 			Assert.IsFalse(SloppyAnswerComparer.AreCloseEnough(null, "test guess"));

@@ -12,22 +12,34 @@
 				return false;
 			}
 
-			answer = NormalizeString(answer);
-			guess = NormalizeString(guess);
+			string cleanAnswer = NormalizeString(answer);
+			string cleanGuess = NormalizeString(guess);
 
-			if (guess.Length == 0)
+			cleanAnswer = NormalizeString(cleanAnswer);
+			cleanGuess = NormalizeString(cleanGuess);
+
+			if (cleanGuess.Length == 0)
 			{
 				return false;
 			}
 
-			if (answer == guess)
+			if (cleanAnswer == cleanGuess)
 			{
 				return true;
 			}
 
 			// Allow for minor typos using Levenshtein distance
-			int distance = LevenshteinDistance(answer, guess);
-			int maxAllowedDistance = Math.Max(1, answer.Length / 5); // Allow 1 typo or 20% of the length
+			int distance = LevenshteinDistance(cleanAnswer, cleanGuess);
+			int maxAllowedDistance = Math.Max(1, cleanAnswer.Length / 5); // Allow 1 typo or 20% of the string length
+
+			// This might be a stupid multiple artist or "featuring" case, try splitting and checking just the first part of the guess/answer
+			if (distance > maxAllowedDistance && (answer.Contains(',') || answer.Contains(';') || answer.Contains('(')))
+			{
+				return AreCloseEnough(
+					answer.Split(new char[] { ',', ';', '(' }, StringSplitOptions.RemoveEmptyEntries)[0].Trim(),
+					guess.Split(new char[] { ',', ';', '(' }, StringSplitOptions.RemoveEmptyEntries)[0].Trim());
+			}
+
 			return distance <= maxAllowedDistance;
 		}
 
