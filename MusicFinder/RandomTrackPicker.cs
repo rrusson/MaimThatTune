@@ -3,7 +3,7 @@
 	public static class RandomTrackPicker
 	{
 		private static readonly Random _random = new();
-		private static readonly string[] _invalidGenres = { "$RECYCLE.BIN", "_Incoming", "_Playlists", "Music Cache", "Uncategorized", "Utilities", "Various Artists", };
+		private static readonly string[] _invalidGenres = { "$RECYCLE.BIN", "_Incoming", "_Playlists", "Music Cache", "Ryan", "Uncategorized", "Utilities", "Various Artists", };
 
 
 		/// <summary>

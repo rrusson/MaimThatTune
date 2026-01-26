@@ -12,23 +12,37 @@
 				return false;
 			}
 
-			answer = NormalizeString(answer);
-			guess = NormalizeString(guess);
+			string cleanAnswer = NormalizeString(answer);
+			string cleanGuess = NormalizeString(guess);
 
-			if (guess.Length == 0)
+			if (cleanGuess.Length == 0)
 			{
 				return false;
 			}
 
-			if (answer == guess)
+			if (cleanAnswer == cleanGuess)
 			{
 				return true;
 			}
 
 			// Allow for minor typos using Levenshtein distance
-			int distance = LevenshteinDistance(answer, guess);
-			int maxAllowedDistance = Math.Max(1, answer.Length / 5); // Allow 1 typo or 20% of the length
-			return distance <= maxAllowedDistance;
+			int distance = LevenshteinDistance(cleanAnswer, cleanGuess);
+			int maxAllowedDistance = Math.Max(1, cleanAnswer.Length / 5); // Allow 1 typo or 20% of the string length
+
+			if (distance <= maxAllowedDistance)
+			{
+				return true;
+			}
+
+			// This might be an awkward multiple artist or "featuring" case, try splitting and checking just the first part of the guess/answer
+			string[] funkyIndicators = [",", ";", " feat ", " feat.", " featuring ", "(feat", " ft", "(ft", "&"];
+
+			if (distance > maxAllowedDistance && funkyIndicators.Any(indicator => answer.Contains(indicator, StringComparison.OrdinalIgnoreCase)))
+			{
+				return AreCloseEnough(answer.Split(funkyIndicators, StringSplitOptions.RemoveEmptyEntries)[0].Trim(), guess);
+			}
+
+			return false;
 		}
 
 		/// <summary>

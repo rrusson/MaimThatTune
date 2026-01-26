@@ -97,8 +97,8 @@ namespace MaimThatTune.Server.Controllers
 				return NotFound();
 			}
 
-			var isCorrect = SloppyAnswerComparer.AreCloseEnough(request.Guess, metadata.Artist)
-				|| SloppyAnswerComparer.AreCloseEnough(request.Guess, metadata.Title);
+			var isCorrect = SloppyAnswerComparer.AreCloseEnough(metadata.Artist, request.Guess)
+				|| SloppyAnswerComparer.AreCloseEnough(metadata.Title, request.Guess);
 
 			// Remove the track from the map after guessing
 			_trackMetadataMap.TryRemove(request.TrackId, out _);
