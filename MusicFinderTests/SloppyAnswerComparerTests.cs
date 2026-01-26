@@ -1,4 +1,3 @@
-using System.Data;
 
 using MusicFinder;
 
@@ -76,7 +75,7 @@ namespace MusicFinderTests
 		[DataRow("test artist", "")]
 		[DataRow("test artist", "?")]    // Only punctuation (boils down to an empty string)
 		[DataRow("X", "??????")]
-		public void AreCloseEnough_NullOrEmpty_ReturnsFalse(string answer, string guess)
+		public void AreCloseEnough_NullOrEmpty_ReturnsFalse(string? answer, string? guess)
 		{
 			Assert.IsFalse(SloppyAnswerComparer.AreCloseEnough(answer, guess));
 		}
