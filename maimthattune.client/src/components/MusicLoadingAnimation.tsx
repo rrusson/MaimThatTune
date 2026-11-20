@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useState } from 'react';
 
 // Music symbols for the loading animation
 const MUSIC_SYMBOLS = ['𝄞', '𝄞', '𝄢', '♯', '♭', '♮', '𝄽', '𝄽', '𝅗𝅥', '𝅘𝅥', '𝅘𝅥', '𝅘𝅥𝅮', '𝅘𝅥𝅯', '♫', '♫', '♬', '♬'];
@@ -37,12 +37,7 @@ export function generateRandomNotes(): NoteConfig[] {
 
 /* Loads overlay component with animated music symbols that fade in and out */
 export const MusicLoadingOverlay: React.FC<MusicLoadingOverlayProps> = ({ fadingOut }) => {
-	const [notes, setNotes] = useState<NoteConfig[]>([]);
-
-	useEffect(() => {
-		// Generate random notes on mount
-		setNotes(generateRandomNotes());
-	}, []);
+	const [notes] = useState<NoteConfig[]>(generateRandomNotes);
 
 	return (
 		<div className={`music-loading-overlay${fadingOut ? ' fade-out' : ''}`}>
