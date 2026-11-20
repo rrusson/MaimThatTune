@@ -23,14 +23,13 @@ function App() {
 	const nextTrackButtonRef = useRef<HTMLButtonElement>(null);
 	const genresLoadedRef = useRef<boolean>(false);
 
-	// Show animation immediately on loading, fade out when loading ends
 	useEffect(() => {
-		if (loading) {
-			setShowLoadingAnim(true);
-		} else if (showLoadingAnim) {
-			const timeout = setTimeout(() => setShowLoadingAnim(false), 700);
-			return () => clearTimeout(timeout);
+		if (loading || !showLoadingAnim) {
+			return;
 		}
+
+		const timeout = setTimeout(() => setShowLoadingAnim(false), 700);
+		return () => clearTimeout(timeout);
 	}, [loading, showLoadingAnim]);
 
 	useEffect(() => {
@@ -38,7 +37,7 @@ function App() {
 			if (genresLoadedRef.current) {
 				return;
 			}
-			
+
 			genresLoadedRef.current = true;
 
 			try {
@@ -60,12 +59,13 @@ function App() {
 	}, []);
 
 	async function fetchRandomSegment() {
+		setShowLoadingAnim(true);
 		setLoading(true);
 		setResult(null);
 		setGuess('');
 		setAudioUrl(null);
 		setTrackId(null);
-		
+
 		const genreParam = selectedGenre !== 'ALL' ? `?genre=${encodeURIComponent(selectedGenre)}` : '';
 		const response = await fetch(`/api/music/random-track${genreParam}`);
 		if (response.ok) {
@@ -93,10 +93,15 @@ function App() {
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ trackId, guess, genre: selectedGenre })
 		});
+
 		if (response.ok) {
 			const data = await response.json();
 			setResult(data);
 		}
+	}
+
+	function isPerfectMatch(guess: string, answer: string) {
+		return guess.toLowerCase().replace('the ', '') === answer.toLowerCase().replace('the ', '');
 	}
 
 	useEffect(() => {
@@ -132,9 +137,7 @@ function App() {
 		);
 	}
 
-	// Precompute isExactMatch for partial credit
-	const isExactMatch = result && result.isCorrect &&
-		(result.artist.toLowerCase() !== guess.toLowerCase() && result.track.toLowerCase() !== guess.toLowerCase());
+	const isExactMatch = result && result.isCorrect && (isPerfectMatch(guess, result.artist) || isPerfectMatch(guess, result.track));
 
 	return (
 		<div className="game-container">
@@ -144,7 +147,7 @@ function App() {
 
 			<h1 className="game-title">🎵 Maim That Tune! 🎵</h1>
 			<p className="game-description">
-				Listen to the music clip and try to <br/>guess the <strong>artist name</strong> or <strong>track name</strong>.
+				Listen to the music clip and try to <br />guess the <strong>artist name</strong> or <strong>track name</strong>.
 			</p>
 
 			{audioUrl && (
@@ -196,16 +199,16 @@ function App() {
 			</form>
 
 			{result && (
-				<div className={`result-container ${isExactMatch ? 'result-partial-credit' : result.isCorrect ? 'result-correct' : 'result-wrong'}`}>
+				<div className={`result-container ${result.isCorrect ? (isExactMatch ? 'result-correct' : 'result-partial-credit') : 'result-wrong'}`}>
 					<div className="result-message">
 						{result.isCorrect ? (
 							isExactMatch ? (
-                                <span className="result-text-desaturated">🧲💣❤️ Close Enough</span>
+								<span className="result-text">👍 Correct! 👍</span>
 							) : (
-									<span className="result-text">👍 Correct! 👍</span>
+								<span className="result-text-desaturated">🧲💣❤️ Close Enough</span>
 							)
 						) : (
-								<span className="result-text">👎 Wrong! 👎</span>
+							<span className="result-text">👎 Wrong! 👎</span>
 						)}
 					</div>
 					<div className="result-details">

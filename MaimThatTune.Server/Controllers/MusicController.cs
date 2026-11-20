@@ -92,12 +92,12 @@ namespace MaimThatTune.Server.Controllers
 				return BadRequest();
 			}
 
-			if (!_trackMetadataMap.TryGetValue(request.TrackId, out var metadata))
+			if (!_trackMetadataMap.TryGetValue(request.TrackId, out Mp3Info? metadata))
 			{
 				return NotFound();
 			}
 
-			var isCorrect = SloppyAnswerComparer.AreCloseEnough(metadata.Artist, request.Guess)
+			bool isCorrect = SloppyAnswerComparer.AreCloseEnough(metadata.Artist, request.Guess)
 				|| SloppyAnswerComparer.AreCloseEnough(metadata.Title, request.Guess);
 
 			// Remove the track from the map after guessing

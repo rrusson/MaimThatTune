@@ -49,6 +49,11 @@ namespace MaimThatTune.Server.Code
 				return null;
 			}
 
+			if (!OperatingSystem.IsWindows())
+			{
+				throw new PlatformNotSupportedException("Truncated MP3 streaming is supported only on Windows.");
+			}
+
 			using var reader = new Mp3FileReader(trackPath);
 			var output = new MemoryStream();
 			double totalSeconds = 0;
@@ -56,7 +61,8 @@ namespace MaimThatTune.Server.Code
 
 			while ((frame = reader.ReadNextFrame()) != null)
 			{
-				output.Write(frame.RawData, 0, frame.RawData.Length);
+				var rawData = frame.RawData ?? throw new InvalidDataException("The MP3 frame did not contain raw audio data.");
+				output.Write(rawData, 0, rawData.Length);
 				totalSeconds += (double)frame.SampleCount / frame.SampleRate;
 				if (totalSeconds >= secondsToStream)
 				{
